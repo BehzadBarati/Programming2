@@ -15,8 +15,10 @@ def get_citations(paper_id):
     Entrez.email = email 
     records = Entrez.read(Entrez.elink(dbfrom="pubmed", id=paper_id, linkname="pubmed_pubmed_refs"))
     pmc_ids = [link["Id"] for link in records[0]["LinkSetDb"][0]["Link"]]
-    return [str(p) for p in pmc_ids[1:11]]
-
+    if len(pmc_ids) > 11: 
+        return [str(p) for p in pmc_ids[1:11]]
+    else:
+        return [str(p) for p in pmc_ids]
 
 #Function to save a paper based on IDs
 def get_papers(paper_id):
@@ -29,12 +31,6 @@ def get_papers(paper_id):
 if __name__ == "__main__":
     cpus = mp.cpu_count()
     paper_ids = get_citations(pmid)
-    processes = []
     
-    for p in paper_ids:
-        temP = mp.Process(target=get_papers, args=(p,))
-        processes.append(temP)
-        temP.start()
-
-    for p in processes:
-        p.join()  
+    with mp.Pool(cpus) as pool:
+        pool.map(get_papers, paper_ids)
