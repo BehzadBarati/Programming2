@@ -1,10 +1,11 @@
 #Import libraries
+import sys
 from Bio import Entrez
 import multiprocessing as mp
 
 
 #Assumptions and settings
-pmid = "32054042"         #ID of our targeted paper
+pmid = sys.argv[1]        #ID of our targeted paper
 email = "b.barati@st.hanze.nl"
 Entrez.api_key = "23aedd7722b207ebc97bc37707b399bfb009"
 
