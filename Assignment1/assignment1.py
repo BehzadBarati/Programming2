@@ -22,7 +22,7 @@ def get_citations(paper_id):
 def get_papers(paper_id):
     Entrez.email = email 
     fetch = Entrez.efetch(db='pubmed',resetmode='xml', id=paper_id, rettype='full')
-    with open(f'output/{paper_id}.xml', 'wb') as f:
+    with open(f'output/PUBMED_{paper_id}.xml', 'wb') as f:
         f.write(fetch.read())
 
 
