@@ -174,7 +174,7 @@ if __name__ == '__main__':
         paper_ids = get_citations(pmid, number_of_articles)
         server = mp.Process(target=runserver, args=(get_papers, paper_ids))
         server.start()
-        time.sleep(5)
+        time.sleep(1)
         
     if serverOrclient == 'c':
         client = mp.Process(target=runclient, args=(number_of_children,))
