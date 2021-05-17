@@ -2,6 +2,8 @@ import multiprocessing as mp
 from multiprocessing.managers import BaseManager, SyncManager
 import os, sys, time, queue
 from Bio import Entrez
+import argparse
+
 
 
 def make_server_manager(port, authkey):
@@ -89,7 +91,6 @@ def get_citations(paper_id, number_of_articles):
     Entrez.email = email 
     records = Entrez.read(Entrez.elink(dbfrom="pubmed", id=paper_id, linkname="pubmed_pubmed_refs", retmode="xml"))
     pmc_ids = [link["Id"] for link in records[0]["LinkSetDb"][0]["Link"]]
-    print(pmc_ids)
     if len(pmc_ids) > number_of_articles: 
         return [str(p) for p in pmc_ids[1:number_of_articles]]
     else:
@@ -146,11 +147,6 @@ def peon(job_q, result_q):
 
 
 #Assumptions and settings
-email = "b.barati@st.hanze.nl"
-Entrez.api_key = "23aedd7722b207ebc97bc37707b399bfb009"
-POISONPILL = "MEMENTOMORI"
-ERROR = "DOH"
-AUTHKEY = b'whathasitgotinitspocketsesss?'
 # arguments to pass are :
     # 1- number of childerns in client
     # 2- if we run server or client
@@ -159,24 +155,39 @@ AUTHKEY = b'whathasitgotinitspocketsesss?'
     # 5- number of articles that should be downloaded
     # 6- ID of main article in Pubmed
 
-number_of_children = int(sys.argv[1])
-serverOrclient = sys.argv[2]
-PORTNUM = int(sys.argv[3])
-IP = sys.argv[4]
-number_of_articles = int(sys.argv[5])
-pmid = sys.argv[6]    
+parser = argparse.ArgumentParser()
+group = parser.add_mutually_exclusive_group(required=True)
+parser.add_argument('-n', type=int, nargs=1, dest='num_children', required=True)
+group.add_argument('-c', dest='client', action="store_true")
+group.add_argument('-s', dest='server', action="store_true")
+parser.add_argument('-p', type=int, nargs=1, dest='port_number', required=True)
+parser.add_argument('-H', type=str, dest='host', required=True)
+parser.add_argument('-a', type=int, nargs=1, dest='num_articles', required=True)
+parser.add_argument('pmid', type=int, nargs=1)
+args = parser.parse_args()
+
+email = "b.barati@st.hanze.nl"
+Entrez.api_key = "23aedd7722b207ebc97bc37707b399bfb009"
+POISONPILL = "MEMENTOMORI"
+ERROR = "DOH"
+AUTHKEY = b'whathasitgotinitspocketsesss?'
+number_of_children = args.num_children
+PORTNUM = args.port_number
+IP = args.host
+number_of_articles = args.num_articles
+pmid = args.pmid[0]    
 #pmid = 31508499
 
 
 if __name__ == '__main__':
     
-    if serverOrclient == 's':
+    if args.server:
         paper_ids = get_citations(pmid, number_of_articles)
         server = mp.Process(target=runserver, args=(get_papers, paper_ids))
         server.start()
         time.sleep(1)
         
-    if serverOrclient == 'c':
+    if args.client:
         client = mp.Process(target=runclient, args=(number_of_children,))
         client.start()
         client.join()
